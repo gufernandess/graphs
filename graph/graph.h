@@ -32,6 +32,8 @@ public:
 
     bool get_is_directed() const { return is_directed; }
 
+    vector<list<Edge>> get_adjacency_list() const { return adjacency_list; }
+
     /**
      * Caso a origem ou destino da aresta não existam no grafo,
      * uma exceção é lançada.
