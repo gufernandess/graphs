@@ -51,47 +51,61 @@ int graph_counting(const std::string& file_name) {
  * sejam coloridos.
  * 
  * Utilizei um vetor para mapear cada vértice a uma determinada cor,
- * e comecei escolhendo uma cor para o primeiro vértice.
+ * e comecei escolhendo uma cor para o primeiro vértice. Também
+ * utilizei um vetor para mapear quais vértices já foram
+ * visitados, para que não haja repetição de vértices.
  * 
- * Também utilizei uma fila para armazenar os vértices que já foram
- * coloridos.
+ * Também utilizei uma fila para implementar a busca em largura,
+ * onde é retirado o primeiro vértice da fila, que é marcado 
+ * como visitado, e seus vizinhos são coloridos com a cor
+ * oposta a do vértice atual.
+ * 
  * 
  * Assim, para cada vértice percorrido, verifico se seus vizinhos
  * já foram coloridos, se não, atribuo a cor oposta a do vértice
  * atual e adiciono o vértice na fila. Caso o vértice já tenha
  * sido colorido, verifico se a cor do vértice atual é igual
- * a do vértice vizinho, se sim, então não é possível
- * colorir esse grafo com apenas duas cores.
+ * a do vértice vizinho, se sim, então é fato que não é
+ * possível colorir esse grafo com apenas duas cores.
 */
 
-bool valid_coloring(Graph& graph) {
-    vector<char> colors(graph.get_number_of_vertices(), ' ');
-    colors[0] = 'R';
+bool Bicoloration(const Graph& graph) {
+    int number_of_vertices = graph.get_number_of_vertices();
 
-    queue<int> queue;
-    queue.push(0);
+    vector<char> colors(number_of_vertices, ' ');
+    vector<bool> visited_vertices(number_of_vertices, false);
 
-    while(!queue.empty()) {
-        int current = queue.front();
-        queue.pop();
+    for(int i = 0; i < number_of_vertices; i++) {
+        if(!visited_vertices[i]) {
+            queue<int> queue_of_vertices;
+            queue_of_vertices.push(i);
+            colors[i] = 'R';
 
-        for(auto edge : graph.neighbors(current)) {
-            if(colors[edge.get_destiny()] == ' ') {
-                if(colors[current] == 'R') colors[edge.get_destiny()] = 'B';
+            while(!queue_of_vertices.empty()) {
+                int current_vertice = queue_of_vertices.front();
+                queue_of_vertices.pop();
+                visited_vertices[current_vertice] = true;
 
-                else colors[edge.get_destiny()] = 'R';
+                for(const auto& edge : graph.neighbors(current_vertice)) {
+                    int neighbor = edge.get_destiny();
 
-                queue.push(edge.get_destiny());
-            }
-            
-            else if(colors[edge.get_destiny()] == colors[current]) {
-                return false;
+                    if(colors[neighbor] == ' ') {
+                        if(colors[current_vertice] == 'R') colors[neighbor] = 'B';
+                        
+                        else if(colors[current_vertice] == 'B') colors[neighbor] = 'R';
+
+                        queue_of_vertices.push(neighbor);
+                    }
+                    
+                    else if(colors[neighbor] == colors[current_vertice]) return false;
+                }
             }
         }
     }
 
     return true;
 }
+
 
 int main() {
     fstream file;
@@ -110,6 +124,7 @@ int main() {
 
         while(count > 0) {
             int source, destiny;
+
             file >> source >> destiny;
 
             graph.insert(Edge(source, destiny));
@@ -117,7 +132,7 @@ int main() {
             count--;
         }
 
-        cout << (valid_coloring(graph) ? "SIM" : "NAO") << endl;
+        cout << (Bicoloration(graph) ? "SIM" : "NAO") << endl;
         number_of_graphs--;
     }
 
