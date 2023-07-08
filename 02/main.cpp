@@ -102,9 +102,10 @@ void create_graph(const string& file_name, Graph& graph, vector<string>& actors,
             }
             
             else if(counter == 1) {
-                movies.push_back(element);
-
-                current_movie = distance(movies.begin(), find(movies.begin(), movies.end(), element));
+                
+                    movies.push_back(element);
+                    current_movie = distance(movies.begin(), find(movies.begin(), movies.end(), element));
+                
             }
             
             counter++;
@@ -120,17 +121,23 @@ void create_graph(const string& file_name, Graph& graph, vector<string>& actors,
  * retorna o número de atores que estão no caminho entre
  * o ator passado como parâmetro e o ator Kevin Bacon.
  * 
- * Para isso, utilizo uma fila de atores e um vetor de visitados.
+ * Para isso, utilizo uma fila de atores, e um vetor de visitados.
  * 
  * A cada iteração, retiro o ator da fila, e verifico se o mesmo é
- * o ator, caso seja, retorno o número de atores que estão no
- * caminho entre o ator passado como parâmetro e o
+ * o ator Kevin Bacon, caso seja, retorno o número de atores que
+ * estão no caminho entre o ator passado como parâmetro e o ator
  * Kevin Bacon.
  * 
  * Caso o ator não seja o ator Kevin Bacon, incremento o número de
  * atores que estão no caminho entre o ator passado como parâmetro
- * e o ator Kevin Bacon, e adiciono os vizinhos do ator na fila,
- * caso os mesmos ainda não tenham sido visitados.
+ * e o ator Kevin Bacon, e adiciono os atores adjacentes ao ator
+ * atual na fila, caso os mesmos ainda não tenham sido visitados.
+ * 
+ * O índice do Kevin nesse caso é 0, pois o mesmo é o primeiro ator
+ * a ser inserido no grafo, e o índice do ator passado como parâmetro
+ * é obtido através da função distance, que retorna a distância entre
+ * o início do vetor e o elemento passado como parâmetro.
+ * 
 */
 
 int bacon_number(const Graph& graph, const vector<string>& actors, const vector<string>& movies, const string& actor) {
@@ -182,19 +189,19 @@ int main() {
 
     create_graph("grafos.txt", graph, actors, movies);
 
-    vector<pair<string, int>> data;
+    vector<pair<string, int>> actor_data;
 
     for(int i = 0; i < number_of_vertices; i++) {
         int number = bacon_number(graph, actors, movies, actors[i]);
-        data.push_back(make_pair(actors[i], number));
+        actor_data.push_back(make_pair(actors[i], number));
     }
 
-    sort(data.begin(), data.end());
+    sort(actor_data.begin(), actor_data.end());
 
-    for(const auto& pair : data) {
+    for(const auto& pair : actor_data) {
         auto actor_index = distance(actors.begin(), find(actors.begin(), actors.end(), pair.first));
 
-        cout << "O numero de Bacon de " << pair.first << " e " << pair.second << " pelo filme "
+        cout << "O numero de Bacon de " << pair.first << " é " << pair.second << " pelo filme "
         << (pair.first == "Kevin Bacon" ? "" : movies[graph.neighbors(actor_index).front().get_weight()]) << '\n';
     }
 
