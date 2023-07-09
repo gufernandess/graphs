@@ -43,66 +43,63 @@ int graph_counting(const std::string& file_name) {
 }
 
 /**
- * Para resolver o problema da coloração de grafos com duas cores,
- * pensei em uma abordagem semelhante a uma busca em largura,
- * onde de forma prática eu atribuo uma cor a um primeiro
- * vértice e atribuo a cor oposta aos seus vizinhos,
- * assim sucessivamente até que todos os vértices
- * sejam coloridos.
+ * A ideia é que o grafo seja bipartido, ou seja, que seja possível
+ * dividir os vértices em dois conjuntos disjuntos, de forma que
+ * todos os vértices de um conjunto não tenham arestas com
+ * vértices do mesmo conjunto.
  * 
- * Utilizei um vetor para mapear cada vértice a uma determinada cor,
- * e comecei escolhendo uma cor para o primeiro vértice. Também
- * utilizei um vetor para mapear quais vértices já foram
- * visitados, para que não haja repetição de vértices.
- * 
- * Também utilizei uma fila para implementar a busca em largura,
- * onde é retirado o primeiro vértice da fila, que é marcado 
- * como visitado, e seus vizinhos são coloridos com a cor
- * oposta a do vértice atual.
- * 
- * 
- * Assim, para cada vértice percorrido, verifico se seus vizinhos
- * já foram coloridos, se não, atribuo a cor oposta a do vértice
- * atual e adiciono o vértice na fila. Caso o vértice já tenha
- * sido colorido, verifico se a cor do vértice atual é igual
- * a do vértice vizinho, se sim, então é fato que não é
- * possível colorir esse grafo com apenas duas cores.
+ * Na função is_bipartite, eu crio um vetor de cores, onde cada
+ * vértice recebe uma cor, e a partir disso eu atribuo cores
+ * aos vértices e pinto seus vizinhos com a cor oposta,
+ * realizando uma busca em largura para percorrer
+ * todos os vértices do grafo. Se em algum momento
+ * eu encontrar um vértice que possui um vizinho
+ * com a mesma cor, o grafo não é bipartido.
 */
 
-bool Bicoloration(const Graph& graph) {
+bool is_bipartite(Graph& graph, int initial_vertice) {
     int number_of_vertices = graph.get_number_of_vertices();
 
     vector<char> colors(number_of_vertices, ' ');
-    vector<bool> visited_vertices(number_of_vertices, false);
+    colors[initial_vertice] = 'R';
 
-    for(int i = 0; i < number_of_vertices; i++) {
-        if(!visited_vertices[i]) {
-            queue<int> queue_of_vertices;
-            queue_of_vertices.push(i);
-            colors[i] = 'R';
+    queue<int> queue_of_vertices;
+    queue_of_vertices.push(initial_vertice);
 
-            while(!queue_of_vertices.empty()) {
-                int current_vertice = queue_of_vertices.front();
-                queue_of_vertices.pop();
-                visited_vertices[current_vertice] = true;
+    while(!queue_of_vertices.empty()) {
+        int current_vertice = queue_of_vertices.front();
 
-                for(const auto& edge : graph.neighbors(current_vertice)) {
-                    int neighbor = edge.get_destiny();
+        queue_of_vertices.pop();
 
-                    if(colors[neighbor] == ' ') {
-                        if(colors[current_vertice] == 'R') colors[neighbor] = 'B';
-                        
-                        else if(colors[current_vertice] == 'B') colors[neighbor] = 'R';
-
-                        queue_of_vertices.push(neighbor);
-                    }
-                    
-                    else if(colors[neighbor] == colors[current_vertice]) return false;
-                }
+        for(auto neighbor : graph.neighbors(current_vertice)) {
+            if(colors[neighbor.get_destiny()] == ' ') {
+                colors[neighbor.get_destiny()] = (colors[current_vertice] == 'R') ? 'B' : 'R';
+                queue_of_vertices.push(neighbor.get_destiny());
             }
+            
+            else if(colors[neighbor.get_destiny()] == colors[current_vertice]) return false;
         }
     }
 
+    return true;
+}
+
+/**
+ * A função is_bipartite_graph percorre todos os vértices do grafo
+ * e verifica se cada um deles é bipartido, se algum deles não for
+ * bipartido, o grafo não é bipartido.
+ * 
+ * Basicamente ele realiza a operação do is_bipartite para cada
+ * vértice do grafo.
+*/
+
+bool is_bipartite_graph(Graph& graph) {
+    int number_of_vertices = graph.get_number_of_vertices();
+
+    for(int i = 0; i < number_of_vertices; ++i) {
+        if(!is_bipartite(graph, i)) return false;
+    }
+    
     return true;
 }
 
@@ -132,7 +129,7 @@ int main() {
             count--;
         }
 
-        cout << (Bicoloration(graph) ? "SIM" : "NAO") << endl;
+        cout << (is_bipartite_graph(graph) ? "SIM" : "NAO") << endl;
         number_of_graphs--;
     }
 
